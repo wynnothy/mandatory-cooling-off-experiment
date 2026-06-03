@@ -1,0 +1,1073 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Decision Study</title>
+
+<!--
+╔══════════════════════════════════════════════════════════════════╗
+║              RESEARCHER SETUP — READ BEFORE DEPLOYING            ║
+╠══════════════════════════════════════════════════════════════════╣
+║                                                                  ║
+║  GOOGLE SHEETS INTEGRATION                                       ║
+║  ─────────────────────────                                       ║
+║  1. Create a new Google Sheet                                    ║
+║  2. Extensions → Apps Script → paste this code exactly:          ║
+║                                                                  ║
+║  function doPost(e) {                                            ║
+║    var sheet = SpreadsheetApp                                    ║
+║      .getActiveSpreadsheet().getActiveSheet();                   ║
+║    var data = JSON.parse(e.postData.contents);                   ║
+║    if (sheet.getLastRow() === 0) {                               ║
+║      sheet.appendRow(data.headers);                              ║
+║    }                                                             ║
+║    data.rows.forEach(function(row) {                             ║
+║      sheet.appendRow(row);                                       ║
+║    });                                                           ║
+║    return ContentService                                         ║
+║      .createTextOutput(JSON.stringify({ok:true}))                ║
+║      .setMimeType(ContentService.MimeType.JSON);                 ║
+║  }                                                               ║
+║                                                                  ║
+║  3. Deploy → New deployment                                      ║
+║     · Type: Web app                                              ║
+║     · Execute as: Me                                             ║
+║     · Who has access: Anyone                                     ║
+║  4. Copy the deployment URL                                      ║
+║  5. Paste it as the value of GOOGLE_SCRIPT_URL below             ║
+║                                                                  ║
+║  DEPLOY TO GITHUB PAGES                                          ║
+║  ────────────────────────                                        ║
+║  Upload this single file to your repo root.                      ║
+║  Enable Pages under Settings → Pages → main branch / root.       ║
+║                                                                  ║
+╚══════════════════════════════════════════════════════════════════╝
+-->
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;1,400&family=Source+Sans+3:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+<style>
+/* ── Reset & Base ─────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:        #eef1f7;
+  --card:      #ffffff;
+  --navy:      #19376d;
+  --navy-mid:  #2c5282;
+  --blue:      #3b82f6;
+  --green:     #15803d;
+  --green-lit: #dcfce7;
+  --red:       #b91c1c;
+  --red-lit:   #fee2e2;
+  --gray:      #6b7280;
+  --gray-lt:   #e5e7eb;
+  --text:      #111827;
+  --muted:     #6b7280;
+  --disabled:  #9ca3af;
+  --shadow:    0 4px 24px rgba(20,40,80,.10);
+  --radius:    16px;
+  --font-head: 'Lora', Georgia, serif;
+  --font-body: 'Source Sans 3', system-ui, sans-serif;
+}
+
+html { font-size: 16px; }
+
+body {
+  font-family: var(--font-body);
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 24px 16px 48px;
+}
+
+/* ── Shell ────────────────────────────────────────────────── */
+.shell {
+  width: 100%;
+  max-width: 600px;
+}
+
+/* ── Header strip ─────────────────────────────────────────── */
+.study-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+.study-label {
+  font-family: var(--font-body);
+  font-size: .75rem;
+  font-weight: 600;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.progress-text {
+  font-size: .8rem;
+  color: var(--muted);
+  font-weight: 600;
+}
+
+/* ── Card ─────────────────────────────────────────────────── */
+.card {
+  background: var(--card);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 40px 48px;
+  width: 100%;
+}
+@media (max-width: 480px) {
+  .card { padding: 28px 24px; }
+}
+
+.card-title {
+  font-family: var(--font-head);
+  font-size: 1.6rem;
+  font-weight: 600;
+  color: var(--navy);
+  margin-bottom: 8px;
+  line-height: 1.2;
+}
+.card-sub {
+  font-size: .9rem;
+  color: var(--muted);
+  margin-bottom: 32px;
+  line-height: 1.5;
+}
+
+/* ── Instructions ─────────────────────────────────────────── */
+.instructions {
+  font-size: .95rem;
+  line-height: 1.8;
+  color: var(--text);
+  margin-bottom: 28px;
+  padding: 20px 24px;
+  background: #f8f9fc;
+  border-radius: 10px;
+  border-left: 4px solid var(--navy-mid);
+}
+
+.consent-block {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 28px;
+  cursor: pointer;
+}
+.consent-block input[type="checkbox"] {
+  width: 20px;
+  height: 20px;
+  margin-top: 2px;
+  flex-shrink: 0;
+  accent-color: var(--navy);
+  cursor: pointer;
+}
+.consent-block label {
+  font-size: .9rem;
+  color: var(--muted);
+  line-height: 1.6;
+  cursor: pointer;
+}
+
+/* ── Buttons ──────────────────────────────────────────────── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-family: var(--font-body);
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: .03em;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background .15s, transform .1s, box-shadow .15s;
+  text-decoration: none;
+  padding: 14px 24px;
+  min-height: 52px;
+}
+.btn:active { transform: scale(.97); }
+
+.btn-primary {
+  background: var(--navy);
+  color: #fff;
+  width: 100%;
+}
+.btn-primary:hover:not(:disabled) { background: var(--navy-mid); box-shadow: 0 4px 12px rgba(25,55,109,.25); }
+.btn-primary:disabled { background: var(--disabled); cursor: not-allowed; }
+
+/* Decision buttons */
+.decision-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin-top: 28px;
+}
+.btn-accept {
+  background: var(--green);
+  color: #fff;
+}
+.btn-accept:hover:not(:disabled) {
+  background: #166534;
+  box-shadow: 0 4px 12px rgba(21,128,61,.3);
+}
+.btn-reject {
+  background: var(--red);
+  color: #fff;
+}
+.btn-reject:hover:not(:disabled) {
+  background: #991b1b;
+  box-shadow: 0 4px 12px rgba(185,28,28,.3);
+}
+.btn-accept:disabled,
+.btn-reject:disabled {
+  background: var(--gray-lt);
+  color: var(--disabled);
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+/* ── Offer Display ────────────────────────────────────────── */
+.offer-badge {
+  display: inline-block;
+  font-size: .75rem;
+  font-weight: 700;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--navy-mid);
+  background: #eff6ff;
+  border-radius: 6px;
+  padding: 4px 12px;
+  margin-bottom: 24px;
+}
+.offer-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 8px;
+}
+.offer-table td {
+  padding: 12px 0;
+  font-size: 1.05rem;
+}
+.offer-table .label {
+  color: var(--muted);
+  font-weight: 400;
+  width: 55%;
+}
+.offer-table .amount {
+  font-family: var(--font-head);
+  font-size: 2rem;
+  font-weight: 600;
+  color: var(--navy);
+  text-align: right;
+}
+.offer-table .amount.you {
+  color: var(--navy);
+}
+.offer-table tr + tr td {
+  border-top: 1px solid var(--gray-lt);
+}
+.offer-total {
+  font-size: .78rem;
+  color: var(--muted);
+  text-align: right;
+  margin-bottom: 4px;
+}
+
+/* ── Countdown ────────────────────────────────────────────── */
+.countdown-zone {
+  margin-top: 24px;
+  padding: 18px 20px;
+  background: #f8f9fc;
+  border-radius: 10px;
+  border: 1px solid var(--gray-lt);
+}
+.countdown-label {
+  font-size: .82rem;
+  font-weight: 600;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  margin-bottom: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.countdown-secs {
+  font-family: var(--font-head);
+  font-size: 1.1rem;
+  color: var(--navy);
+  font-weight: 600;
+}
+.countdown-bar-track {
+  height: 6px;
+  background: var(--gray-lt);
+  border-radius: 3px;
+  overflow: hidden;
+}
+.countdown-bar-fill {
+  height: 100%;
+  background: var(--navy-mid);
+  border-radius: 3px;
+  transition: width .5s linear;
+  width: 100%;
+}
+.countdown-ready {
+  font-size: .85rem;
+  font-weight: 600;
+  color: var(--green);
+  margin-top: 8px;
+  display: none;
+}
+
+/* ── Ratings ──────────────────────────────────────────────── */
+.rating-item {
+  margin-bottom: 28px;
+  padding-bottom: 28px;
+  border-bottom: 1px solid var(--gray-lt);
+}
+.rating-item:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+
+.rating-offer-label {
+  font-size: .85rem;
+  font-weight: 600;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  margin-bottom: 6px;
+}
+.rating-offer-desc {
+  font-family: var(--font-head);
+  font-size: 1.1rem;
+  color: var(--navy);
+  font-weight: 600;
+  margin-bottom: 14px;
+}
+.likert-row {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.likert-option {
+  flex: 1;
+  min-width: 36px;
+}
+.likert-option input { display: none; }
+.likert-option label {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 42px;
+  border-radius: 8px;
+  border: 2px solid var(--gray-lt);
+  font-size: .88rem;
+  font-weight: 700;
+  color: var(--muted);
+  cursor: pointer;
+  transition: all .15s;
+  user-select: none;
+}
+.likert-option input:checked + label {
+  background: var(--navy);
+  border-color: var(--navy);
+  color: #fff;
+}
+.likert-option label:hover {
+  border-color: var(--navy-mid);
+  color: var(--navy-mid);
+}
+.likert-option input:checked + label:hover {
+  color: #fff;
+}
+.likert-anchor-row {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 6px;
+}
+.likert-anchor {
+  font-size: .72rem;
+  color: var(--muted);
+}
+
+/* ── Demographics ─────────────────────────────────────────── */
+.field {
+  margin-bottom: 22px;
+}
+.field label {
+  display: block;
+  font-size: .85rem;
+  font-weight: 700;
+  color: var(--navy);
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  margin-bottom: 8px;
+}
+.field label .opt {
+  font-weight: 400;
+  text-transform: none;
+  letter-spacing: 0;
+  color: var(--muted);
+  font-size: .82rem;
+}
+.field input[type="number"],
+.field input[type="text"],
+.field select,
+.field textarea {
+  width: 100%;
+  padding: 12px 14px;
+  border: 2px solid var(--gray-lt);
+  border-radius: 8px;
+  font-family: var(--font-body);
+  font-size: .95rem;
+  color: var(--text);
+  background: #fff;
+  transition: border-color .15s;
+  outline: none;
+  -webkit-appearance: none;
+}
+.field input:focus,
+.field select:focus,
+.field textarea:focus {
+  border-color: var(--navy-mid);
+}
+.field textarea { resize: vertical; min-height: 110px; }
+.field select { cursor: pointer; }
+
+/* Gender radio */
+.radio-group { display: flex; gap: 10px; flex-wrap: wrap; }
+.radio-opt input { display: none; }
+.radio-opt label {
+  padding: 10px 18px;
+  border: 2px solid var(--gray-lt);
+  border-radius: 8px;
+  font-size: .9rem;
+  font-weight: 600;
+  color: var(--muted);
+  cursor: pointer;
+  transition: all .15s;
+  display: block;
+  user-select: none;
+}
+.radio-opt input:checked + label {
+  border-color: var(--navy);
+  background: var(--navy);
+  color: #fff;
+}
+
+/* ── Complete / Export ────────────────────────────────────── */
+.complete-icon {
+  font-size: 3rem;
+  margin-bottom: 12px;
+  display: block;
+}
+.sheets-status {
+  margin-top: 16px;
+  padding: 12px 16px;
+  border-radius: 8px;
+  font-size: .85rem;
+  font-weight: 600;
+}
+.sheets-status.ok {
+  background: var(--green-lit);
+  color: var(--green);
+}
+.sheets-status.fail {
+  background: var(--red-lit);
+  color: var(--red);
+}
+.sheets-status.pending {
+  background: #eff6ff;
+  color: var(--navy-mid);
+}
+.sheets-status.skip {
+  background: #f3f4f6;
+  color: var(--muted);
+}
+.btn-download {
+  background: #fff;
+  color: var(--navy);
+  border: 2px solid var(--navy);
+  width: 100%;
+  margin-top: 12px;
+}
+.btn-download:hover {
+  background: var(--navy);
+  color: #fff;
+}
+
+/* ── Screens ──────────────────────────────────────────────── */
+.screen { display: none; }
+.screen.active { display: block; }
+
+.fade-in { animation: fadeIn .35s ease; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+/* ── Divider ──────────────────────────────────────────────── */
+.divider {
+  height: 1px;
+  background: var(--gray-lt);
+  margin: 24px 0;
+}
+
+/* ── Error message ────────────────────────────────────────── */
+.error-msg {
+  font-size: .82rem;
+  color: var(--red);
+  margin-top: 8px;
+  display: none;
+  font-weight: 600;
+}
+.error-msg.visible { display: block; }
+</style>
+</head>
+
+<body>
+<div class="shell">
+
+  <!-- ════════════════ WELCOME SCREEN ════════════════ -->
+  <div id="screen-welcome" class="screen active">
+    <div class="study-header">
+      <span class="study-label">Research Study</span>
+    </div>
+    <div class="card fade-in">
+      <h1 class="card-title">Decision Study</h1>
+      <p class="card-sub">Please read the following information carefully before proceeding.</p>
+
+      <div class="instructions">
+        <p>You will participate in a series of allocation decisions involving a $10 amount.</p>
+        <br>
+        <p>For each offer, you may either <strong>accept</strong> or <strong>reject</strong> the proposed split.</p>
+        <br>
+        <p>If you accept, the proposed allocation is implemented.<br>
+           If you reject, neither party receives anything from that round.</p>
+        <br>
+        <p>Please respond honestly to each decision.</p>
+      </div>
+
+      <label class="consent-block">
+        <input type="checkbox" id="consent-check">
+        <span id="consent-label">I have read the above information and agree to participate in this study.</span>
+      </label>
+      <p class="error-msg" id="consent-error">Please check the box above to continue.</p>
+      <button class="btn btn-primary" id="btn-start" onclick="startExperiment()">Begin Study</button>
+    </div>
+  </div>
+
+  <!-- ════════════════ OFFER SCREEN ════════════════ -->
+  <div id="screen-offer" class="screen">
+    <div class="study-header">
+      <span class="study-label">Allocation Decision</span>
+      <span class="progress-text" id="offer-progress">Decision 1 of 5</span>
+    </div>
+    <div class="card fade-in" id="offer-card">
+      <div class="offer-badge" id="offer-round-badge">Round 1</div>
+      <table class="offer-table">
+        <tr>
+          <td class="label">You receive</td>
+          <td class="amount you" id="offer-you">$5</td>
+        </tr>
+        <tr>
+          <td class="label">Other receives</td>
+          <td class="amount" id="offer-other">$5</td>
+        </tr>
+      </table>
+      <p class="offer-total">Total available: $10</p>
+
+      <!-- Countdown zone (shown only in cooling-off condition) -->
+      <div class="countdown-zone" id="countdown-zone" style="display:none">
+        <div class="countdown-label">
+          <span>Response window</span>
+          <span class="countdown-secs" id="countdown-secs">40s</span>
+        </div>
+        <div class="countdown-bar-track">
+          <div class="countdown-bar-fill" id="countdown-fill"></div>
+        </div>
+        <p class="countdown-ready" id="countdown-ready">You may now respond below.</p>
+      </div>
+
+      <div class="decision-row">
+        <button class="btn btn-accept" id="btn-accept" onclick="recordDecision('accept')" disabled>
+          ✓ Accept
+        </button>
+        <button class="btn btn-reject" id="btn-reject" onclick="recordDecision('reject')" disabled>
+          ✗ Reject
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════ RATINGS SCREEN ════════════════ -->
+  <div id="screen-ratings" class="screen">
+    <div class="study-header">
+      <span class="study-label">Follow-up Questions</span>
+    </div>
+    <div class="card fade-in">
+      <h2 class="card-title">Offer Evaluations</h2>
+      <p class="card-sub">For each of the offers below, please rate how fair you consider it on a 1–7 scale.</p>
+
+      <div id="ratings-container"></div>
+
+      <p class="error-msg" id="ratings-error">Please complete all ratings before continuing.</p>
+      <button class="btn btn-primary" style="margin-top:24px" onclick="submitRatings()">Continue</button>
+    </div>
+  </div>
+
+  <!-- ════════════════ SUSPICION SCREEN ════════════════ -->
+  <div id="screen-suspicion" class="screen">
+    <div class="study-header">
+      <span class="study-label">Study Questionnaire</span>
+    </div>
+    <div class="card fade-in">
+      <h2 class="card-title">Study Questionnaire</h2>
+      <p class="card-sub">Please answer the following question as honestly as possible.</p>
+
+      <div class="field">
+        <label for="suspicion-text">What do you believe this study was investigating?</label>
+        <textarea id="suspicion-text" placeholder="Please describe your thoughts here…" rows="5"></textarea>
+      </div>
+
+      <p class="error-msg" id="suspicion-error">Please enter a response before continuing.</p>
+      <button class="btn btn-primary" onclick="submitSuspicion()">Continue</button>
+    </div>
+  </div>
+
+  <!-- ════════════════ DEMOGRAPHICS SCREEN ════════════════ -->
+  <div id="screen-demographics" class="screen">
+    <div class="study-header">
+      <span class="study-label">Background Information</span>
+    </div>
+    <div class="card fade-in">
+      <h2 class="card-title">Background Information</h2>
+      <p class="card-sub">Please provide the following information. All fields marked required must be completed.</p>
+
+      <div class="field">
+        <label for="demo-age">Age <span style="color:var(--red)">*</span></label>
+        <input type="number" id="demo-age" min="18" max="99" placeholder="e.g. 21">
+      </div>
+
+      <div class="field">
+        <label>Gender <span style="color:var(--red)">*</span></label>
+        <div class="radio-group">
+          <div class="radio-opt">
+            <input type="radio" name="gender" id="gender-m" value="Male">
+            <label for="gender-m">Male</label>
+          </div>
+          <div class="radio-opt">
+            <input type="radio" name="gender" id="gender-f" value="Female">
+            <label for="gender-f">Female</label>
+          </div>
+          <div class="radio-opt">
+            <input type="radio" name="gender" id="gender-nb" value="Non-binary">
+            <label for="gender-nb">Non-binary</label>
+          </div>
+          <div class="radio-opt">
+            <input type="radio" name="gender" id="gender-pnts" value="Prefer not to say">
+            <label for="gender-pnts">Prefer not to say</label>
+          </div>
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="demo-major">Major / Field of Study <span class="opt">(optional)</span></label>
+        <input type="text" id="demo-major" placeholder="e.g. Economics">
+      </div>
+
+      <p class="error-msg" id="demo-error">Please fill in all required fields.</p>
+      <button class="btn btn-primary" onclick="submitDemographics()">Submit</button>
+    </div>
+  </div>
+
+  <!-- ════════════════ COMPLETE SCREEN ════════════════ -->
+  <div id="screen-complete" class="screen">
+    <div class="study-header">
+      <span class="study-label">Study Complete</span>
+    </div>
+    <div class="card fade-in">
+      <span class="complete-icon">✓</span>
+      <h2 class="card-title">Thank You</h2>
+      <p class="card-sub">Your participation is complete. Your responses have been recorded.</p>
+
+      <div class="sheets-status pending" id="sheets-status">
+        Submitting to database…
+      </div>
+
+      <div class="divider"></div>
+
+      <p style="font-size:.85rem;color:var(--muted);margin-bottom:10px;">
+        Download a copy of your session data for your records.
+      </p>
+      <button class="btn btn-download" onclick="downloadCSV()">⬇ Download Data (CSV)</button>
+    </div>
+  </div>
+
+</div><!-- /shell -->
+
+<script>
+/* ════════════════════════════════════════════════════════════════
+   RESEARCHER CONFIGURATION
+   ════════════════════════════════════════════════════════════════
+   1. Deploy the Apps Script doPost function (see comment at top).
+   2. Paste the web app URL below.
+   Leave empty to skip Sheets upload (CSV download still works).
+   ════════════════════════════════════════════════════════════════ */
+const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxE1Uc8O0yHwIKMZNBnlfrA2NllMobGbWkrpBFxNYI9NrfuRSEMHCopqN1M8KdXFbJ-GA/exec';          // ← paste URL here
+const COOLING_OFF_SECONDS = 40;        // mandatory wait (do not change)
+
+/* ═══ Offer definitions ════════════════════════════════════════ */
+const OFFERS = [
+  { id: 'A', you: 5, other: 5, label: 'Offer A ($5/$5)',  split: '50/50' },
+  { id: 'B', you: 4, other: 6, label: 'Offer B ($4/$6)',  split: '40/60' },
+  { id: 'C', you: 3, other: 7, label: 'Offer C ($3/$7)',  split: '30/70' },
+  { id: 'D', you: 2, other: 8, label: 'Offer D ($2/$8)',  split: '20/80' },
+  { id: 'E', you: 1, other: 9, label: 'Offer E ($1/$9)',  split: '10/90' },
+];
+
+/* ═══ State ════════════════════════════════════════════════════ */
+let state = {
+  participantId    : generateId(),
+  condition        : '',          // 'immediate' | 'cooling_off'
+  offerOrder       : [],          // shuffled OFFERS array
+  trials           : [],
+  fairnessRatings  : {},          // offerId → 1-7
+  suspicionResponse: '',
+  demographics     : {},
+  currentTrial     : 0,
+  offerShownAt     : 0,           // epoch ms when offer appeared
+  buttonsActiveAt  : 0,           // epoch ms when buttons enabled
+  countdownTimer   : null,
+};
+
+/* ═══ Utilities ════════════════════════════════════════════════ */
+function generateId() {
+  return 'P-' + Date.now().toString(36).toUpperCase()
+         + '-' + Math.random().toString(36).slice(2, 6).toUpperCase();
+}
+
+function shuffle(arr) {
+  const a = arr.slice();
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => {
+    s.classList.remove('active');
+  });
+  const target = document.getElementById(id);
+  target.classList.add('active');
+  // Re-trigger fade animation
+  const card = target.querySelector('.card');
+  if (card) { card.classList.remove('fade-in'); void card.offsetWidth; card.classList.add('fade-in'); }
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+/* ═══ Experiment Init ══════════════════════════════════════════ */
+function startExperiment() {
+  const check  = document.getElementById('consent-check');
+  const errMsg = document.getElementById('consent-error');
+  if (!check.checked) {
+    errMsg.classList.add('visible');
+    return;
+  }
+  errMsg.classList.remove('visible');
+
+  // Assign condition 50/50
+  state.condition   = Math.random() < 0.5 ? 'immediate' : 'cooling_off';
+  state.offerOrder  = shuffle(OFFERS);
+  state.currentTrial = 0;
+
+  showNextOffer();
+}
+
+/* ═══ Offer Screen ════════════════════════════════════════════ */
+function showNextOffer() {
+  if (state.currentTrial >= state.offerOrder.length) {
+    buildRatingsScreen();
+    showScreen('screen-ratings');
+    return;
+  }
+
+  const offer    = state.offerOrder[state.currentTrial];
+  const position = state.currentTrial + 1;
+
+  document.getElementById('offer-progress').textContent = `Decision ${position} of 5`;
+  document.getElementById('offer-round-badge').textContent = `Round ${position}`;
+  document.getElementById('offer-you').textContent   = `$${offer.you}`;
+  document.getElementById('offer-other').textContent = `$${offer.other}`;
+
+  // Disable buttons initially
+  setDecisionButtons(false);
+
+  showScreen('screen-offer');
+  state.offerShownAt = Date.now();
+
+  if (state.condition === 'immediate') {
+    // Immediate: enable buttons right away
+    document.getElementById('countdown-zone').style.display = 'none';
+    state.buttonsActiveAt = Date.now();
+    setDecisionButtons(true);
+  } else {
+    // Cooling-off: show countdown, enable after COOLING_OFF_SECONDS
+    runCountdown(COOLING_OFF_SECONDS);
+  }
+}
+
+function setDecisionButtons(enabled) {
+  const ba = document.getElementById('btn-accept');
+  const br = document.getElementById('btn-reject');
+  ba.disabled = !enabled;
+  br.disabled = !enabled;
+}
+
+function runCountdown(seconds) {
+  const zone  = document.getElementById('countdown-zone');
+  const secs  = document.getElementById('countdown-secs');
+  const fill  = document.getElementById('countdown-fill');
+  const ready = document.getElementById('countdown-ready');
+
+  zone.style.display = 'block';
+  ready.style.display = 'none';
+  fill.style.width = '100%';
+  secs.textContent = seconds + 's';
+
+  let remaining = seconds;
+  const total   = seconds;
+
+  if (state.countdownTimer) clearInterval(state.countdownTimer);
+
+  state.countdownTimer = setInterval(() => {
+    remaining -= 1;
+    const pct = (remaining / total) * 100;
+    fill.style.width = pct + '%';
+    secs.textContent = remaining + 's';
+
+    if (remaining <= 0) {
+      clearInterval(state.countdownTimer);
+      state.countdownTimer = null;
+      fill.style.width = '0%';
+      secs.textContent = '0s';
+      ready.style.display = 'block';
+      state.buttonsActiveAt = Date.now();
+      setDecisionButtons(true);
+    }
+  }, 1000);
+}
+
+/* ═══ Record Decision ════════════════════════════════════════ */
+function recordDecision(choice) {
+  // Prevent double-click
+  setDecisionButtons(false);
+  if (state.countdownTimer) {
+    clearInterval(state.countdownTimer);
+    state.countdownTimer = null;
+  }
+
+  const now   = Date.now();
+  const offer = state.offerOrder[state.currentTrial];
+
+  state.trials.push({
+    participant_id    : state.participantId,
+    condition         : state.condition,
+    offer_shown       : offer.label,
+    offer_split       : offer.split,
+    offer_you         : offer.you,
+    offer_other       : offer.other,
+    offer_id          : offer.id,
+    offer_order_pos   : state.currentTrial + 1,
+    decision          : choice,
+    decision_timestamp: new Date(now).toISOString(),
+    response_time_ms  : now - state.offerShownAt,
+    rt_from_active_ms : now - state.buttonsActiveAt,
+  });
+
+  state.currentTrial++;
+  showNextOffer();
+}
+
+/* ═══ Fairness Ratings ════════════════════════════════════════ */
+function buildRatingsScreen() {
+  const container = document.getElementById('ratings-container');
+  container.innerHTML = '';
+
+  // Display in canonical order A→E (50/50 → 10/90)
+  OFFERS.forEach((offer, i) => {
+    const block = document.createElement('div');
+    block.className = 'rating-item';
+    block.innerHTML = `
+      <p class="rating-offer-label">${offer.split}</p>
+      <p class="rating-offer-desc">You: $${offer.you} &nbsp;·&nbsp; Other: $${offer.other}</p>
+      <p style="font-size:.82rem;color:var(--muted);margin-bottom:10px;">
+        How fair do you consider this offer?
+      </p>
+      <div class="likert-row" id="likert-${offer.id}">
+        ${[1,2,3,4,5,6,7].map(v => `
+          <div class="likert-option">
+            <input type="radio" name="rating-${offer.id}" id="r-${offer.id}-${v}" value="${v}">
+            <label for="r-${offer.id}-${v}">${v}</label>
+          </div>
+        `).join('')}
+      </div>
+      <div class="likert-anchor-row">
+        <span class="likert-anchor">1 = Very Unfair</span>
+        <span class="likert-anchor">7 = Very Fair</span>
+      </div>
+    `;
+    container.appendChild(block);
+  });
+}
+
+function submitRatings() {
+  // Validate all 5 ratings chosen
+  let allSet = true;
+  OFFERS.forEach(offer => {
+    const selected = document.querySelector(`input[name="rating-${offer.id}"]:checked`);
+    if (!selected) {
+      allSet = false;
+    } else {
+      state.fairnessRatings[offer.id] = parseInt(selected.value, 10);
+    }
+  });
+
+  if (!allSet) {
+    document.getElementById('ratings-error').classList.add('visible');
+    return;
+  }
+  document.getElementById('ratings-error').classList.remove('visible');
+  showScreen('screen-suspicion');
+}
+
+/* ═══ Suspicion ══════════════════════════════════════════════ */
+function submitSuspicion() {
+  const val = document.getElementById('suspicion-text').value.trim();
+  if (!val) {
+    document.getElementById('suspicion-error').classList.add('visible');
+    return;
+  }
+  document.getElementById('suspicion-error').classList.remove('visible');
+  state.suspicionResponse = val;
+  showScreen('screen-demographics');
+}
+
+/* ═══ Demographics ═══════════════════════════════════════════ */
+function submitDemographics() {
+  const age    = document.getElementById('demo-age').value.trim();
+  const gender = document.querySelector('input[name="gender"]:checked');
+  const major  = document.getElementById('demo-major').value.trim();
+
+  if (!age || !gender) {
+    document.getElementById('demo-error').classList.add('visible');
+    return;
+  }
+  document.getElementById('demo-error').classList.remove('visible');
+
+  state.demographics = {
+    age   : parseInt(age, 10),
+    gender: gender.value,
+    major : major || '',
+  };
+
+  completeExperiment();
+}
+
+/* ═══ Completion & Export ════════════════════════════════════ */
+function completeExperiment() {
+  showScreen('screen-complete');
+  submitToSheets();
+}
+
+function buildRows() {
+  return state.trials.map(trial => {
+    const fairness = state.fairnessRatings[trial.offer_id] || '';
+    return {
+      participant_id    : trial.participant_id,
+      condition         : trial.condition,
+      offer_shown       : trial.offer_shown,
+      offer_split       : trial.offer_split,
+      offer_you         : trial.offer_you,
+      offer_other       : trial.offer_other,
+      offer_order       : trial.offer_order_pos,
+      decision          : trial.decision,
+      response_time_ms  : trial.response_time_ms,
+      rt_from_active_ms : trial.rt_from_active_ms,
+      timestamp         : trial.decision_timestamp,
+      fairness_rating   : fairness,
+      age               : state.demographics.age,
+      gender            : state.demographics.gender,
+      major             : state.demographics.major,
+      suspicion_response: state.suspicionResponse,
+    };
+  });
+}
+
+const CSV_HEADERS = [
+  'participant_id','condition','offer_shown','offer_split',
+  'offer_you','offer_other','offer_order','decision',
+  'response_time_ms','rt_from_active_ms','timestamp',
+  'fairness_rating','age','gender','major','suspicion_response'
+];
+
+function rowToCSV(obj) {
+  return CSV_HEADERS.map(h => {
+    const v = String(obj[h] ?? '').replace(/"/g, '""');
+    return v.includes(',') || v.includes('"') || v.includes('\n') ? `"${v}"` : v;
+  }).join(',');
+}
+
+function downloadCSV() {
+  const rows  = buildRows();
+  const lines = [CSV_HEADERS.join(','), ...rows.map(rowToCSV)];
+  const blob  = new Blob([lines.join('\r\n')], { type: 'text/csv;charset=utf-8;' });
+  const url   = URL.createObjectURL(blob);
+  const a     = document.createElement('a');
+  a.href      = url;
+  a.download  = `experiment_${state.participantId}_${Date.now()}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+async function submitToSheets() {
+  const statusEl = document.getElementById('sheets-status');
+
+  if (!GOOGLE_SCRIPT_URL) {
+    statusEl.className = 'sheets-status skip';
+    statusEl.textContent = 'Google Sheets not configured — download CSV to save data.';
+    return;
+  }
+
+  statusEl.className  = 'sheets-status pending';
+  statusEl.textContent = 'Submitting to Google Sheets…';
+
+  const payload = {
+    headers: CSV_HEADERS,
+    rows   : buildRows().map(obj => CSV_HEADERS.map(h => obj[h] ?? '')),
+  };
+
+  try {
+    await fetch(GOOGLE_SCRIPT_URL, {
+      method : 'POST',
+      mode   : 'no-cors',          // Apps Script requires no-cors
+      body   : JSON.stringify(payload),
+    });
+    // no-cors means we can't read the response; optimistically report success
+    statusEl.className  = 'sheets-status ok';
+    statusEl.textContent = '✓ Data submitted to Google Sheets.';
+  } catch (err) {
+    statusEl.className  = 'sheets-status fail';
+    statusEl.textContent = '✗ Sheets submission failed — please download the CSV to preserve data.';
+  }
+}
+</script>
+</body>
+</html>
