@@ -541,6 +541,7 @@ body {
     id="participant-id-input"
     placeholder="Enter your assigned participant ID"
   >
+
 </div>
 
 <div class="shell">
@@ -801,6 +802,18 @@ function startExperiment() {
     return;
   }
   errMsg.classList.remove('visible');
+
+const enteredId = document
+  .getElementById('participant-id-input')
+  .value
+  .trim();
+
+if (!enteredId) {
+  alert('Please enter your Participant ID before continuing.');
+  return;
+}
+
+state.participantId = enteredId;
 
   // Assign condition 50/50
   state.condition   = Math.random() < 0.5 ? 'immediate' : 'cooling_off';
