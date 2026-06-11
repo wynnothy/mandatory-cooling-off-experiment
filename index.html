@@ -10,7 +10,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;1,400&family=Source+Sans+3:wght@300;400;600;700&display=swap" rel="stylesheet">
 
 <style>
-
+/* ── Reset & Base ─────────────────────────────────────────── */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
@@ -47,11 +47,13 @@ body {
   padding: 24px 16px 48px;
 }
 
+/* ── Shell ────────────────────────────────────────────────── */
 .shell {
   width: 100%;
   max-width: 600px;
 }
 
+/* ── Header strip ─────────────────────────────────────────── */
 .study-header {
   display: flex;
   justify-content: space-between;
@@ -487,7 +489,6 @@ body {
 </head>
 
 <body>
-  
 <div class="shell">
 
   <!-- ════════════════ WELCOME SCREEN ════════════════ -->
@@ -500,13 +501,14 @@ body {
       <p class="card-sub">Please read the following information carefully before proceeding.</p>
 
       <div class="instructions">
-        <p>You will participate in a decision-making study involving a series of allocation decisions.</p>
-        <p>You will make five decisions involving proposed divisions of a $10 amount.</p>
+        <p>You will participate in a series of allocation decisions involving a $10 amount.</p>
         <br>
         <p>For each offer, you may either <strong>accept</strong> or <strong>reject</strong> the proposed split.</p>
         <br>
-        <p>Please consider each decision carefully and respond according to your preferences.</p>
-        <p>There are no right or wrong answers. We are interested only in your genuine decisions.</p>
+        <p>If you accept, the proposed allocation is implemented.<br>
+           If you reject, neither party receives anything from that round.</p>
+        <br>
+        <p>Please respond honestly to each decision.</p>
       </div>
 
       <label class="consent-block">
@@ -739,11 +741,8 @@ function startExperiment() {
   }
   errMsg.classList.remove('visible');
 
-  state.participantId = generateId();
-
   // Assign condition 50/50
   state.condition   = Math.random() < 0.5 ? 'immediate' : 'cooling_off';
-  console.log("Condition:", state.condition);
   state.offerOrder  = shuffle(OFFERS);
   state.currentTrial = 0;
 
@@ -1018,10 +1017,10 @@ async function submitToSheets() {
   try {
     await fetch(GOOGLE_SCRIPT_URL, {
       method : 'POST',
-      mode   : 'no-cors',          
+      mode   : 'no-cors',          // Apps Script requires no-cors
       body   : JSON.stringify(payload),
     });
-
+    // no-cors means we can't read the response; optimistically report success
     statusEl.className  = 'sheets-status ok';
     statusEl.textContent = '✓ Data submitted to Google Sheets.';
   } catch (err) {
