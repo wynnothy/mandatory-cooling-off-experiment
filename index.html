@@ -739,7 +739,7 @@ function startExperiment() {
   }
   errMsg.classList.remove('visible');
 
-state.participantId = generateId;
+  state.participantId = generateId();
 
   // Assign condition 50/50
   state.condition   = Math.random() < 0.5 ? 'immediate' : 'cooling_off';
