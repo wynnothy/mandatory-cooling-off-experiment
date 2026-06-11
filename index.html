@@ -488,7 +488,7 @@ body {
 
 <body>
 
-   <!-- ════════════════ ID FIELD ════════════════ -->
+   <!-- ════════════════ ID FIELD ════════════════
   <div class="field">
   <label for="participant-id-input">
     Participant ID <span style="color:var(--red)">*</span>
@@ -501,7 +501,8 @@ body {
   >
 
 </div>
-
+-->
+  
 <div class="shell">
 
   <!-- ════════════════ WELCOME SCREEN ════════════════ -->
@@ -753,17 +754,7 @@ function startExperiment() {
   }
   errMsg.classList.remove('visible');
 
-const enteredId = document
-  .getElementById('participant-id-input')
-  .value
-  .trim();
-
-if (!enteredId) {
-  alert('Please enter your Participant ID before continuing.');
-  return;
-}
-
-state.participantId = enteredId;
+state.participantId = generateId;
 
   // Assign condition 50/50
   state.condition   = Math.random() < 0.5 ? 'immediate' : 'cooling_off';
