@@ -5,52 +5,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Decision Study</title>
 
-<!--
-╔══════════════════════════════════════════════════════════════════╗
-║              RESEARCHER SETUP — READ BEFORE DEPLOYING            ║
-╠══════════════════════════════════════════════════════════════════╣
-║                                                                  ║
-║  GOOGLE SHEETS INTEGRATION                                       ║
-║  ─────────────────────────                                       ║
-║  1. Create a new Google Sheet                                    ║
-║  2. Extensions → Apps Script → paste this code exactly:          ║
-║                                                                  ║
-║  function doPost(e) {                                            ║
-║    var sheet = SpreadsheetApp                                    ║
-║      .getActiveSpreadsheet().getActiveSheet();                   ║
-║    var data = JSON.parse(e.postData.contents);                   ║
-║    if (sheet.getLastRow() === 0) {                               ║
-║      sheet.appendRow(data.headers);                              ║
-║    }                                                             ║
-║    data.rows.forEach(function(row) {                             ║
-║      sheet.appendRow(row);                                       ║
-║    });                                                           ║
-║    return ContentService                                         ║
-║      .createTextOutput(JSON.stringify({ok:true}))                ║
-║      .setMimeType(ContentService.MimeType.JSON);                 ║
-║  }                                                               ║
-║                                                                  ║
-║  3. Deploy → New deployment                                      ║
-║     · Type: Web app                                              ║
-║     · Execute as: Me                                             ║
-║     · Who has access: Anyone                                     ║
-║  4. Copy the deployment URL                                      ║
-║  5. Paste it as the value of GOOGLE_SCRIPT_URL below             ║
-║                                                                  ║
-║  DEPLOY TO GITHUB PAGES                                          ║
-║  ────────────────────────                                        ║
-║  Upload this single file to your repo root.                      ║
-║  Enable Pages under Settings → Pages → main branch / root.       ║
-║                                                                  ║
-╚══════════════════════════════════════════════════════════════════╝
--->
-
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;1,400&family=Source+Sans+3:wght@300;400;600;700&display=swap" rel="stylesheet">
 
 <style>
-/* ── Reset & Base ─────────────────────────────────────────── */
+
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
@@ -87,13 +47,11 @@ body {
   padding: 24px 16px 48px;
 }
 
-/* ── Shell ────────────────────────────────────────────────── */
 .shell {
   width: 100%;
   max-width: 600px;
 }
 
-/* ── Header strip ─────────────────────────────────────────── */
 .study-header {
   display: flex;
   justify-content: space-between;
@@ -557,18 +515,10 @@ body {
 
       <div class="instructions">
         <p>You will participate in a decision-making study involving a series of allocation decisions.</p>
-        <p>At the start of the study, you will receive 3 participation points.</p>
-        <p>You will then make five decisions involving proposed divisions of a $10 amount between yourself and another participant.</p>
-      
+        <p>You will make five decisions involving proposed divisions of a $10 amount.</p>
         <br>
         <p>For each offer, you may either <strong>accept</strong> or <strong>reject</strong> the proposed split.</p>
         <br>
-        <p>If you accept, the proposed allocation is implemented.<br>
-          If you reject, neither party receives anything from that round.</p>
-        <br>
-        <p>At the conclusion of the study, one of the rounds will be randomly selected for payment purposes.</p>
-        <p>If you accepted the offer in the selected round, your outcome from that round will determine your final point total.</p>
-        <p>Depending on your decisions and the randomly selected round, your total course credit may range from 3 to 10 points.</p>
         <p>Please consider each decision carefully and respond according to your preferences.</p>
         <p>There are no right or wrong answers. We are interested only in your genuine decisions.</p>
       </div>
@@ -1092,10 +1042,10 @@ async function submitToSheets() {
   try {
     await fetch(GOOGLE_SCRIPT_URL, {
       method : 'POST',
-      mode   : 'no-cors',          // Apps Script requires no-cors
+      mode   : 'no-cors',          
       body   : JSON.stringify(payload),
     });
-    // no-cors means we can't read the response; optimistically report success
+
     statusEl.className  = 'sheets-status ok';
     statusEl.textContent = '✓ Data submitted to Google Sheets.';
   } catch (err) {
